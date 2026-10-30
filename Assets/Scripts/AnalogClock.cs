@@ -27,9 +27,29 @@ public class AnalogClock : MonoBehaviour
     [Tooltip("Sweep the second hand smoothly instead of ticking once per second")]
     public bool smoothSeconds = false;
 
+    [Header("Ticking sound")]
+    [Tooltip("3D audio source on the clock. Its distance rolloff makes the ticking louder up close and fade as you walk away")]
+    public AudioSource tickSource = null;
+
+    [Tooltip("Played on even seconds")]
+    public AudioClip tickClip = null;
+
+    [Tooltip("Played on odd seconds, so the clock goes tick-tock")]
+    public AudioClip tockClip = null;
+
+    private int lastSecond = -1;
+
     private void Update()
     {
         DateTime now = DateTime.Now;
+
+        // Tick once each time the second changes, in step with the second hand.
+        if (now.Second != lastSecond)
+        {
+            if (lastSecond >= 0)
+                PlayTick(now.Second);
+            lastSecond = now.Second;
+        }
 
         float seconds = now.Second + (smoothSeconds ? now.Millisecond / 1000f : 0f);
         float minutes = now.Minute + seconds / 60f;
@@ -46,6 +66,13 @@ public class AnalogClock : MonoBehaviour
 
         if (digitalDate != null)
             digitalDate.text = now.ToString("dddd, d MMMM yyyy");
+    }
+
+    private void PlayTick(int second)
+    {
+        AudioClip clip = second % 2 == 1 && tockClip != null ? tockClip : tickClip;
+        if (tickSource != null && clip != null)
+            tickSource.PlayOneShot(clip);
     }
 
     private static void SetHandAngle(Transform hand, float degreesClockwise)
