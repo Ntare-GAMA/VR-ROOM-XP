@@ -27,7 +27,7 @@ All three are in **File > Build Settings** in that order, so the app always star
 
 ### VR Room - NTARE GAMA Allan (course room)
 Everything from the course lessons:
-- **Locomotion:** teleport areas, teleport mats, snap turn and continuous move.
+- **Locomotion:** teleport areas, teleport mats, and snap or continuous turning.
 - **Grabbing:** hand and ray grabbing, distance grab (toggle in Settings), books, a remote, hats and more.
 - **Sockets:** three hat hooks plus a hat socket on the player's head, all filtered to the **Hats** interaction layer.
 - **Physics:** cabinet doors on hinge joints, the room door on a hinge (grab its handle), and paintings you can take off the wall and hang back on their hooks (**Paintings** layer).
@@ -47,6 +47,11 @@ Everything from the course lessons:
 - **In-room UI:** an instructions panel that follows your view, with **Start exploring**, **Create with VR Room**, **Main Menu** and **Reset room**. Press **A** or **Menu** to open it again.
 - **Teleporting** anywhere on the floor, and colliders on the walls, floors and furniture.
 
+### Spatial audio (all scenes)
+- **Grab and impact sounds:** every grabbable object makes a soft sound when picked up and an impact sound matched to its material (wood, glass, metal, stone, fabric or plastic) when it lands or hits something. Harder hits are louder.
+- **Doors:** a creak that follows how fast the door swings, a latch click on the handle, and a bump when it hits a wall.
+- **Wall clocks:** a tick-tock in step with the second hand that gets louder as you walk up to the clock and fades as you walk away.
+
 ### Animated hands (all scenes)
 Rigged hands that follow your real fingers: **grip** curls the middle, ring and little fingers, the **trigger** curls the index finger,
 and the thumb follows whichever is pressed harder. Half presses give half-curled fingers.
@@ -57,8 +62,8 @@ and the thumb follows whichever is pressed harder. Half presses give half-curled
 |---|---|
 | Grip | Grab / curl fingers |
 | Trigger | Use a held object (flashlight, remote) / press UI buttons / curl index finger |
-| Left thumbstick | Move |
-| Right thumbstick | Snap turn, or push forward to aim a teleport |
+| Thumbstick forward | Aim a teleport, release to teleport |
+| Thumbstick left or right | Turn (snap or continuous) |
 | A / Menu | Open the room menu |
 
 ## Scripts
@@ -68,9 +73,11 @@ All gameplay scripts are in `Assets/Scripts`. The course scripts live in `Assets
 | Script | What it does |
 |---|---|
 | `SceneNavigator.cs` | Loads a scene by name from a UI button. It fades to black first through the scene's `FadeCanvas`, then uses `SceneManager.LoadSceneAsync`. It also has `ReloadCurrentScene()` and `Quit()`. |
-| `AnalogClock.cs` | Every frame it reads `DateTime.Now` and rotates the hands: 30° per hour, 6° per minute and 6° per second. The hour and minute hands include the fraction of the next unit, so they move continuously. It also writes `HH:mm:ss` and the full date to TextMeshPro labels. |
+| `AnalogClock.cs` | Every frame it reads `DateTime.Now` and rotates the hands: 30° per hour, 6° per minute and 6° per second. The hour and minute hands include the fraction of the next unit, so they move continuously. It also writes `HH:mm:ss` and the full date to TextMeshPro labels. Each time the second changes it plays a tick or tock on a 3D Audio Source. |
 | `HandPoseAnimator.cs` | Reads the analog grip and trigger values from the XRI input actions, smooths them, and bends each finger joint from its rest pose around its local X axis. It runs in `LateUpdate` with no animation clips. |
 | `ToggleRayDistanceGrab.cs` | Lets the Settings toggle switch the rays between pulling objects to the hand and grabbing them at a distance. |
+| `ObjectSounds.cs` | Plays a grab sound on pickup and a random impact clip on collision, with volume scaled by impact speed. Socket snaps stay silent. |
+| `DoorSounds.cs` | Maps the door Rigidbody angular speed to the volume and pitch of a looping creak, and plays latch and bump sounds. |
 
 ### How the interactions are built
 - **Interaction layers** (`Assets/XRI/Settings/Resources/InteractionLayerSettings.asset`): Default, Hats, House, Wrist, Chess, Flashlight, Power Cell and Paintings. A socket only accepts interactables that share one of its layers, which is how each socket filters what it accepts.
